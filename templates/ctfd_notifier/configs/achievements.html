@@ -13,10 +13,11 @@
                 <div class="form-group">
                     <label for="value">Description<br>
                         <small class="form-text text-muted">
-                            Descripttion of the achievement. What does it represent?
+                            Description of the achievement. What does it represent?
                         </small>
                     </label>
-                    <input type="text" class="form-control" name="description" placeholder="Enter achievement description" required>
+                    <input type="text" class="form-control" name="description"
+                        placeholder="Enter achievement description" required>
                 </div>
                 <div class="form-group">
                     <label for="value">Badge Image URL<br>
@@ -24,42 +25,83 @@
                             Image URL for achievement badge
                         </small>
                     </label>
-                    <input type="text" class="form-control" name="image_url" placeholder="Enter Image URL for achievement badge" required>
+                    <input type="text" class="form-control" name="image_url"
+                        placeholder="Enter Image URL for achievement badge" required>
                 </div>
+
+                <div class="form-group">
+                    <label for="value">Challenges<br>
+                        <small class="form-text text-muted">
+                            Select challenges needed to be solved for this achievement
+                        </small>
+                    </label>
+                    {% for challenge in challenges %}
+                    <div>
+                        <input type="checkbox" name="chall_ids" value="{{ challenge.id }}"
+                            id="chall_id_{{ challenge.id }}" />
+                        <label for="chall_id_{{ challenge.id }}">{{ challenge.name }} ({{ challenge.category }})</label>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <hr />
                 <div class="form-check">
                     <input type="checkbox" class="form-check-input" name="enabled" id="enabled">
-                    <label class="form-check-label" for="enabled">Enabled</label>
+                    <label class="form-check-label" for="enabled">Enabled?</label>
                 </div>
-        
+
                 <input type="hidden" value="{{ Session.nonce }}" name="nonce" id="nonce" />
-                <button type="submit" class="btn btn-md btn-primary float-right">Create Achievement</button>
-            </form>    
+                <br />
+                <button type="submit" class="btn btn-md btn-primary">Create Achievement</button>
+            </form>
         </div>
         <hr />
         <h3>Achievements</h3>
         <div class="row">
-                {% for achievement in achievements %}
-                <div class="col-sm-6 pb-3">
-                    <div class="info-card card">
-                        <div class="card-body">
-                            <h5 class="d-inline-block card-title">
-                                {{ achievement.name }}
-                                </a>
-                            </h5>
-                            <img class="d-inline-block card-subtitle float-right" src="{{ achievement.image_url}}" />
-                            <p class="card-text">{{ achievement.description }}</p>
-                            <div class="form-group">
-                                <label for="challenge">Add challenge to achievement</label>
-                                <select class="form-control" id="challenge">
-                                {% for challenge in challenges %}
-                                  <option>{{ challenge.name }} </option>
-                                {% endfor %}
-                                </select>
-                              </div>
-                            <button type="submit" class="btn btn-md btn-primary float-right">Add Challenge</button>
-                        </div>
+            {% for achievement in achievements %}
+            <div class="col-sm-6 pb-3">
+                <div class="info-card card" style="align-items: center; padding: 24px 32px;">
+                    <img class="d-inline-block card-subtitle" width="120" height="120"
+                        src="{{ achievement.image_url}}" />
+                    <br />
+                    <h5 class="d-inline-block card-title">
+                        {{ achievement.name }}
+                    </h5>
+                    <p class="card-text">{{ achievement.description }}</p>
+                    <a class="btn btn-link collapse-link" data-toggle="collapse"
+                        href="#achievement-{{ achievement.id }}">
+                        <h5>Challenges ({{ achievement.challenges | length  }})</h5>
+                    </a>
+                    <div id="achievement-{{ achievement.id }}" class="collapse">
+                        {% for challenge in achievement.challenges %}
+                        <p>{{ challenge.name }}</p>
+                        {% endfor %}
+                    </div>
+                    <a class="btn btn-link collapse-link" data-toggle="collapse"
+                        href="#achievement-users-{{ achievement.id }}">
+                        <h5>Achievers ({{ achievement.users | length  }})</h5>
+                    </a>
+                    <div id="achievement-users-{{ achievement.id }}" class="collapse">
+                        {% for user in achievement.users %}
+                        <p>{{ user.name }}</p>
+                        {% endfor %}
+                    </div>
+                    <br />
+                    <div style="display: flex; justify-content: space-between;">
+                        <form method="POST" action="notifier/achievements/toggle_enabled" style="padding-right: 2px;">
+                            <input type="hidden" name="id" value="{{ achievement.id }}" />
+                            <input type="hidden" name="nonce" value="{{ Session.nonce }}" id="nonce" />
+                            <button type="submit" class="btn btn-md btn-primary">{{"Disable" if achievement.enabled else
+                                "Enable"}}</button>
+                        </form>
+                        <form method="POST" action="notifier/achievements/delete" style="padding-left: 2px;">
+                            <input type="hidden" name="id" value="{{ achievement.id }}" />
+                            <input type="hidden" name="nonce" value="{{ Session.nonce }}" id="nonce" />
+                            <button type="submit" class="btn btn-md btn-primary">Delete Achievement</button>
+                        </form>
                     </div>
                 </div>
+            </div>
             {% endfor %}
         </div>
     </div>

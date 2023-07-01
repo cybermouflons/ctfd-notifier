@@ -43,17 +43,36 @@ def load_bp(plugin_route):
 
     @notifier_bp.route(plugin_route + "/achievements", methods=["POST"])
     @admins_only
-    def update_achievements():
+    def create_achievement():
         achievement = request.form.to_dict()
         achievement["enabled"] = (
             True if achievement.get("enabled", "off") == "on" else False
         )
         del achievement["nonce"]
 
+        chal_ids = request.form.getlist("chall_ids") or []
+        achievement["chall_ids"] = [ int(x.strip()) for x in chal_ids ]
+
         # Validate here maybe?
 
         DBAchievements.create_achievement(**achievement)
 
+        return redirect("/admin/notifier", code=302)
+
+    @notifier_bp.route(plugin_route + "/achievements/delete", methods=["POST"])
+    @admins_only
+    def delete_achievement():
+        achievement = request.form.to_dict()
+        achievement_id = int(achievement["id"])
+        DBAchievements.delete_achievement(id=achievement_id)
+        return redirect("/admin/notifier", code=302)
+
+    @notifier_bp.route(plugin_route + "/achievements/toggle_enabled", methods=["POST"])
+    @admins_only
+    def toggle_enabled_achievement():
+        achievement = request.form.to_dict()
+        achievement_id = int(achievement["id"])
+        DBAchievements.toggle_enabled(id=achievement_id)
         return redirect("/admin/notifier", code=302)
 
     return notifier_bp
