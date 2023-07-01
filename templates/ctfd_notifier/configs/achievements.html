@@ -1,0 +1,66 @@
+<div role="tabpanel" class="tab-pane config-section" id="achievements">
+    <div class="container">
+        <div class="row">
+            <form method="POST" action="notifier/achievements" autocomplete="off" class="w-100">
+                <div class="form-group">
+                    <label for="value">Name<br>
+                        <small class="form-text text-muted">
+                            Name of the achievement
+                        </small>
+                    </label>
+                    <input type="text" class="form-control" name="name" placeholder="Enter achievement name" required>
+                </div>
+                <div class="form-group">
+                    <label for="value">Description<br>
+                        <small class="form-text text-muted">
+                            Descripttion of the achievement. What does it represent?
+                        </small>
+                    </label>
+                    <input type="text" class="form-control" name="description" placeholder="Enter achievement description" required>
+                </div>
+                <div class="form-group">
+                    <label for="value">Badge Image URL<br>
+                        <small class="form-text text-muted">
+                            Image URL for achievement badge
+                        </small>
+                    </label>
+                    <input type="text" class="form-control" name="image_url" placeholder="Enter Image URL for achievement badge" required>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" name="enabled" id="enabled">
+                    <label class="form-check-label" for="enabled">Enabled</label>
+                </div>
+        
+                <input type="hidden" value="{{ Session.nonce }}" name="nonce" id="nonce" />
+                <button type="submit" class="btn btn-md btn-primary float-right">Create Achievement</button>
+            </form>    
+        </div>
+        <hr />
+        <h3>Achievements</h3>
+        <div class="row">
+                {% for achievement in achievements %}
+                <div class="col-sm-6 pb-3">
+                    <div class="info-card card">
+                        <div class="card-body">
+                            <h5 class="d-inline-block card-title">
+                                {{ achievement.name }}
+                                </a>
+                            </h5>
+                            <img class="d-inline-block card-subtitle float-right" src="{{ achievement.image_url}}" />
+                            <p class="card-text">{{ achievement.description }}</p>
+                            <div class="form-group">
+                                <label for="challenge">Add challenge to achievement</label>
+                                <select class="form-control" id="challenge">
+                                {% for challenge in challenges %}
+                                  <option>{{ challenge.name }} </option>
+                                {% endfor %}
+                                </select>
+                              </div>
+                            <button type="submit" class="btn btn-md btn-primary float-right">Add Challenge</button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

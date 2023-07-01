@@ -1,4 +1,4 @@
-from .models import NotifierConfig
+from .models import Achievement, ChallengeAchievementRelationship, NotifierConfig
 
 from CTFd.models import (
     db
@@ -57,3 +57,16 @@ class DBUtils:
                 c = NotifierConfig(key=cv["key"], value=cv["value"])
                 db.session.add(c)
         db.session.commit()
+
+class DBAchievements:
+
+    @staticmethod
+    def create_achievement(name: str, description: str, image_url: str, enabled: bool):
+        achievement = Achievement(name=name, description=description, image_url=image_url, enabled=enabled)
+        db.session.add(achievement)
+        db.session.commit()
+
+    @staticmethod
+    def get_all_achievements():
+        q = db.session.query(Achievement)
+        return q.all()

@@ -16,6 +16,9 @@
                 <li class="nav-item">
 					<a class="nav-link rounded-0" href="#twitter" role="tab" data-toggle="tab">Twitter Notifier</a>
 				</li>
+				<li class="nav-item">
+					<a class="nav-link rounded-0" href="#achievements" role="tab" data-toggle="tab">Achievements</a>
+				</li>
 			</ul>
 		</div>
 		<div class="col-md-9">
@@ -30,8 +33,9 @@
 			{% endfor %}
 
 			<div class="tab-content">
-                {% include "ctfd_notifier/configs/discord.html" %}
+				{% include "ctfd_notifier/configs/discord.html" %}
                 {% include "ctfd_notifier/configs/twitter.html" %}
+				{% include "ctfd_notifier/configs/achievements.html" %}
 			</div>
 		</div>
 	</div>
