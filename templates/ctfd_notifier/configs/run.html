@@ -1,0 +1,40 @@
+<div role="tabpanel" class="tab-pane config-section" id="achievements">
+    <div class="container">
+        <div class="row">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Achievement name</th>
+                        <th>Player name</th>
+                        <th>Notified</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user_achievement in user_achievements %}
+                        <tr>
+                            <td>{{ user_achievement[-1].name }}</td>
+                            <td>{{ user_achievement[-2].name }} </td>
+                            <th>{{ user_achievement.notified }}</th>
+                            <td>
+                                <form method="POST" action="notifier/achievements/notify">
+                                    <input type="hidden" name="nonce" value="{{ Session.nonce }}" id="nonce" />
+                                    <input type="hidden" name="achievement_user" value="{{user_achievement[-2].id}}"  />
+                                    <input type="hidden" name="achievement_id" value="{{user_achievement[-1].id}}"  />
+                                    <button type="submit" class="btn btn-primary">Send Notification</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <hr />
+        <div class="row">
+            <form method="POST" action="notifier/achievements/run" autocomplete="off" class="w-100">
+                <input type="hidden" name="nonce" value="{{ Session.nonce }}" id="nonce" />
+                <button type="submit" class="btn btn-md btn-primary">Create Achievements</button>
+            </form>
+        </div>
+    </div>
+</div>

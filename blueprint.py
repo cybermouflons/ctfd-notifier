@@ -5,6 +5,7 @@ from CTFd.utils.decorators import admins_only, authed_only
 
 import requests as rq
 import tweepy
+from .hooks import discord_achievement_notify
 
 notifier_bp = Blueprint("notifier", __name__, template_folder="templates")
 
@@ -16,10 +17,12 @@ def load_bp(plugin_route):
         config = DBUtils.get_config()
         achievements = DBAchievements.get_all_achievements()
         challenges = get_all_challenges(admin=True)
+        user_achievements = DBAchievements.get_all_unlocked_achievements()
         return render_template(
             "ctfd_notifier/config.html",
             config=config,
             achievements=achievements,
+            user_achievements=user_achievements,
             challenges=challenges,
         )
 
@@ -51,7 +54,7 @@ def load_bp(plugin_route):
         del achievement["nonce"]
 
         chal_ids = request.form.getlist("chall_ids") or []
-        achievement["chall_ids"] = [ int(x.strip()) for x in chal_ids ]
+        achievement["chall_ids"] = [int(x.strip()) for x in chal_ids]
 
         # Validate here maybe?
 
@@ -73,6 +76,31 @@ def load_bp(plugin_route):
         achievement = request.form.to_dict()
         achievement_id = int(achievement["id"])
         DBAchievements.toggle_enabled(id=achievement_id)
+        return redirect("/admin/notifier", code=302)
+
+    @notifier_bp.route(plugin_route + "/achievements/run", methods=["POST"])
+    @admins_only
+    def achievements_run():
+        achievements = DBAchievements.create_achievements_for_all_users()
+        print(achievements)
+        return redirect("/admin/notifier", code=302)
+
+    @notifier_bp.route(plugin_route + "/achievements/notify", methods=["POST"])
+    @admins_only
+    def achievements_notify():
+        form = request.form.to_dict()
+        config = DBUtils.get_config()
+        user_achievement = DBAchievements.get_user_achievelent_relation(
+            form["achievement_user"], form["achievement_id"]
+        )
+        DBAchievements.update_user_achievement(
+            form["achievement_user"], form["achievement_id"], {"notified": True}
+        )
+        discord_achievement_notify(
+            user_achievement[-1],
+            user_achievement[-2],
+            config.get("discord_webhook_url"),
+        )
         return redirect("/admin/notifier", code=302)
 
     return notifier_bp

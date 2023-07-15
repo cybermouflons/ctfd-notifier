@@ -1,11 +1,18 @@
 from CTFd.models import db
 
-user_achievement_association_table = db.Table('user_achievement_relationship', 
-    db.Column('achievement_id', db.Integer, db.ForeignKey('achievements.id', ondelete='CASCADE')),
-    db.Column('user_id', db.Integer, db.ForeignKey('users.id', ondelete='CASCADE')),
-    db.Column('solve_id', db.Integer, db.ForeignKey('solves.id', ondelete='CASCADE')),
-    db.Column('created_at', db.DateTime, default=db.func.now())
+user_achievement_association_table = db.Table(
+    "user_achievement_relationship",
+    db.Column(
+        "achievement_id",
+        db.Integer,
+        db.ForeignKey("achievements.id", ondelete="CASCADE"),
+    ),
+    db.Column("user_id", db.Integer, db.ForeignKey("users.id", ondelete="CASCADE")),
+    db.Column("solve_id", db.Integer, db.ForeignKey("solves.id", ondelete="CASCADE")),
+    db.Column("notified", db.Boolean, default=False),
+    db.Column("created_at", db.DateTime, default=db.func.now()),
 )
+
 
 class NotifierConfig(db.Model):
     key = db.Column(db.String(length=128), primary_key=True)
@@ -31,16 +38,17 @@ class Achievement(db.Model):
     challenges = db.relationship(
         "Challenges",
         secondary="challenge_achievement_relationship",
-        cascade="all",
+        cascade="save-update, merge, refresh-expire, expunge",
     )
     users = db.relationship(
         "Users",
         secondary="user_achievement_relationship",
-        cascade="all",
+        cascade="save-update, merge, refresh-expire, expunge",
     )
 
     def __repr__(self):
         return "<Achievement {0}>".format(self.name)
+
 
 class ChallengeAchievementRelationship(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

@@ -2,8 +2,6 @@ import json
 
 import requests as rq
 from sqlalchemy.event import listen
-from flask import current_app
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy import text
 
 import CTFd.cache as cache
@@ -12,7 +10,6 @@ from CTFd.utils.config import is_teams_mode
 
 from ...utils.modes import get_model
 from .db_utils import DBAchievements, DBUtils
-from .models import Achievement, ChallengeAchievementRelationship
 
 
 def discord_notify(solve, webhookurl, first_blood=False):
@@ -56,8 +53,6 @@ def discord_achievement_notify(solve, achievement, webhookurl):
         print(e)
 
 
-
-
 def on_solve(mapper, conn, solve):
     config = DBUtils.get_config()
     solves = _getSolves(solve.challenge_id)
@@ -67,16 +62,24 @@ def on_solve(mapper, conn, solve):
             discord_notify(solve, config.get("discord_webhook_url"), first_blood=True)
         elif solves > 0:
             discord_notify(solve, config.get("discord_webhook_url"))
-        
 
     chall_achievements = DBAchievements.get_all_achievements_of_challenge(
         solve.challenge_id
     )
     for achievement in chall_achievements:
         if _has_solved_all_for(achievement, solve):
-            conn.execute(text("INSERT INTO user_achievement_relationship (achievement_id, user_id, solve_id, created_at) VALUES (:achievement_id, :user_id, :solve_id, CURRENT_TIMESTAMP)"),
-                           {"achievement_id": achievement.id, "user_id": solve.user_id, "solve_id": solve.id})
-            if config.get("discord_notifier") == "true":   
+            conn.execute(
+                text(
+                    "INSERT INTO user_achievement_relationship (achievement_id, user_id, solve_id, notified, created_at) VALUES (:achievement_id, :user_id, :solve_id, :notified, CURRENT_TIMESTAMP)"
+                ),
+                {
+                    "achievement_id": achievement.id,
+                    "user_id": solve.user_id,
+                    "solve_id": solve.id,
+                    "notified": config.get("discord_notifier") == "true",
+                },
+            )
+            if config.get("discord_notifier") == "true":
                 discord_achievement_notify(
                     solve, achievement, config.get("discord_webhook_url")
                 )
@@ -152,7 +155,7 @@ def _getText(solve, first_blood=False):
         text = f"{name} got first blood on {challenge.name} and is now in {place} place with {score} points!"
     else:
         text = f"{name} solved {challenge.name} and is now in {place} place with {score} points!"
-    
+
     return text
 
 
